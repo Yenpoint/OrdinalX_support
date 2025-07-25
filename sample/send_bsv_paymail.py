@@ -44,7 +44,7 @@ def main(params):
     # 200以外の応答はエラーを表している
     else:
         logger.warning('Server responded with an error')
-        logger.warnning(f'Server response: {response.text}')
+        logger.warning(f'Server response: {response.text}')
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
