@@ -33,7 +33,7 @@ python3 -m venv .venv
 3. 仮想環境をアクティベートします：
 ```bash
 # Linux/macOS
-source .venv/bin/activ.envate
+source .venv/bin/activate
 
 # Windows
 .venv\Scripts\activate
