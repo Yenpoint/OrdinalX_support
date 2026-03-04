@@ -14,7 +14,7 @@ def open_session():
 
     session = requests.Session()
     try:
-        response = session.get(url)
+        response = session.get(url + '/auth/login/')
         response.raise_for_status()
 
         cookies = session.cookies
@@ -32,23 +32,32 @@ def open_session():
             raise RuntimeError('サーバーがCSRFトークンを返しませんでした')
 
     except Exception as e:
-        logger.critical(f'セッション開始時にエラーが発生: {e}');
+        logger.critical(f'セッション開始時にエラーが発生: {e}')
+        raise
 
-def get_jwt_token(session):
+def login(session, csrf_token):
     # ログイン情報を環境変数からとってくる
     credential = {'username': os.environ.get('ORDINALX_USERNAME'),
                   'password': os.environ.get('ORDINALX_PASSWORD')}
     logger.debug(f'Login with credentials: {credential}')
 
-    # JWTトークンを取得する
+    # セッション認証でログインする
     fqdn = os.environ.get('ORDINALX_SERVER_FQDN')
-    endpoint = '/api/v1/auth/jwt-token'
+    endpoint = '/api/v1/auth/login'
     url = 'https://' + fqdn + endpoint
-    response = session.post(url, json=credential)
+    headers = {'X-CSRFTOKEN': csrf_token}
+    response = session.post(url, json=credential, headers=headers)
 
     logger.debug(f'Request Header: {response.request.headers}')
     logger.debug(f'Request Body  : {response.request.body}')
     logger.debug(f'Response      : {response.text}')
 
-    jwt_token = response.json()['access']
-    return jwt_token
+    response.raise_for_status()
+    return session.cookies.get('csrftoken', csrf_token)
+
+def logout(session):
+    fqdn = os.environ.get('ORDINALX_SERVER_FQDN')
+    endpoint = '/api/v1/auth/logout'
+    url = 'https://' + fqdn + endpoint
+    response = session.get(url)
+    logger.debug(f'Logout response: {response.status_code}')

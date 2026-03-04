@@ -8,7 +8,7 @@
 - **NFT作成**: カスタムコンテンツでNFTを作成
 - **NFT送信**: PaymailアドレスにNFTを送信
 - **NFT焼却**: NFTを永続的に破棄
-- **認証**: CSRF保護付きのJWTベース認証
+- **認証**: CSRF保護付きのセッションベース認証
 - **セッション管理**: 適切なHTTPセッション処理
 
 ## 前提条件
@@ -116,14 +116,16 @@ python burn_nft.py -o <nft_origin>
 - **`utils.py`**: 認証とセッション管理のためのコアユーティリティ
   - `load_environment()`: .envファイルから環境変数を読み込み
   - `open_session()`: CSRFトークン付きHTTPセッションを確立
-  - `get_jwt_token(session)`: 認証してJWTトークンを取得
+  - `login(session, csrf_token)`: セッション認証でログインする
+  - `logout(session)`: セッションを無効化してログアウトする
 
 ### 認証フロー
 
 1. `load_environment()`で環境変数を読み込み
 2. `open_session()`でセッションを作成しCSRFトークンを取得
-3. `get_jwt_token(session)`でJWTトークンを取得
-4. JWTトークンを使用して認証済みAPI呼び出しを実行
+3. `login(session, csrf_token)`でセッション認証してログイン
+4. セッションCookieを使用して認証済みAPI呼び出しを実行（`X-CSRFTOKEN`ヘッダー付き）
+5. `logout(session)`でサーバー側セッションを無効化
 
 ### APIエンドポイント
 
